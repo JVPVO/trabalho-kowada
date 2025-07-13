@@ -11,7 +11,7 @@ Taluno* criarAluno(long long cpf, const char* nome, int nota) {
         exit(EXIT_FAILURE);
     }
     aluno->CPF = cpf;
-    aluno->nome = strdup(nome); // Cópia segura da string
+    aluno->nome = strdup(nome); // Cópia da string
     aluno->nota = nota;
     return aluno;
 }
@@ -42,7 +42,7 @@ void imprimirAlunoArquivo(const Taluno* aluno, const hashSecundaria* hash) {
 }
 
 int main() {
-    long long cpf = 18476737712LL;
+    long long cpf = 18476737712;
     int cpfTratado = cpf / 100;
     srand(cpfTratado);
     int numeroAleatorio = rand();
