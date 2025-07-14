@@ -68,6 +68,43 @@ void insere_nao_cheio_arvbmais(TNoArvBMais* no, int chave, long desloc){
     insere_nao_cheio_arvbmais(no->filhos[i], chave, desloc);
 }
 
+TARVBP* arvbp_carrega_existente(const char* nome_dados, const char* nome_indice){
+    TARVBP* arvore = (TARVBP*)malloc(sizeof(TARVBP));
+    arvore->raiz = criar_no_arvbmais(1);
+    arvore->arquivoDados = fopen(nome_dados, "r+b");
+    if(!arvore->arquivoDados){
+        printf("Erro ao abrir dados_arvbmais.bin");
+        free(arvore);
+        return NULL;
+    }
+    
+    // Reconstrói os índices a partir dos dados existentes
+    fseek(arvore->arquivoDados, 0, SEEK_SET);
+    TRegistro registro;
+    long posicao = 0;
+    
+    while(fread(&registro, sizeof(TRegistro), 1, arvore->arquivoDados) == 1) {
+        if(strlen(registro.cpf) > 0) {
+            int chave = cpf9(registro.cpf);
+            TNoArvBMais* r = arvore->raiz;
+            if(r->n_chaves == 2*ORDEM_BP){
+                TNoArvBMais* s = criar_no_arvbmais(0);
+                arvore->raiz = s;
+                s->filhos[0]=r;
+                dividir_filho_arvbmais(s,0);
+                int idx = (chave > s->chaves[0]) ? 1 : 0;
+                insere_nao_cheio_arvbmais(s->filhos[idx], chave, posicao);
+            } else {
+                insere_nao_cheio_arvbmais(r, chave, posicao);
+            }
+        }
+        posicao = ftell(arvore->arquivoDados);
+    }
+    
+    (void)nome_indice;
+    return arvore;
+}
+
 TARVBP* arvbp_inicializa(const char* nome_dados, const char* nome_indice){
     TARVBP* arvore = (TARVBP*)malloc(sizeof(TARVBP));
     arvore->raiz = criar_no_arvbmais(1);

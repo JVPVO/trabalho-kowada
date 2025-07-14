@@ -12,6 +12,8 @@ typedef struct heap {
 
 THeap* heap_inicializa(int capacidade, const char* nomeArquivo);
 
+THeap* heap_carrega_existente(const char* nomeArquivo);
+
 void heap_insere(THeap* heap, TRegistro* registro);
 
 int heap_busca(THeap* heap, const char* cpf, TRegistro* out);

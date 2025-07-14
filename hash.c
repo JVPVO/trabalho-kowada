@@ -15,6 +15,24 @@ int hashar(int valor, int tamanho){
     return (rand() % tamanho) * 2;
 }
 
+THashSecundaria* hash_carrega_existente(int tamanho){
+    THashSecundaria* hash = (THashSecundaria*)malloc(sizeof(THashSecundaria));
+    if (!hash) {
+        printf("Erro ao alocar memória para hash\n");
+        return NULL;
+    }
+
+    hash->arquivo = fopen("hash.bin", "r+b");
+    if(!hash->arquivo) {
+        printf("Erro ao abrir arquivo hash.bin\n");
+        free(hash);
+        return NULL;
+    }
+    
+    hash->tamanho = tamanho;
+    return hash; 
+}
+
 THashSecundaria* hash_inicializa(int tamanho){
     THashSecundaria* hash = (THashSecundaria*)malloc(sizeof(THashSecundaria));
 

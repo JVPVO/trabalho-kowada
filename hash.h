@@ -10,6 +10,8 @@ typedef struct hashSecundaria {
 
 THashSecundaria* hash_inicializa(int tamanho);
 
+THashSecundaria* hash_carrega_existente(int tamanho);
+
 int hashar(int valor, int tamanho);
 
 void hash_insere(THashSecundaria* hash, TRegistro* registro);

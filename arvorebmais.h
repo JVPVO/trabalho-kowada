@@ -22,6 +22,8 @@ typedef struct arvbmais {
 
 TARVBP* arvbp_inicializa(const char* nome_dados, const char* nome_indice);
 
+TARVBP* arvbp_carrega_existente(const char* nome_dados, const char* nome_indice);
+
 void arvbp_fecha(TARVBP* arvore, const char* nome_indice);
 
 void arvbp_insere(TARVBP* arvore, TRegistro* registro);

@@ -127,6 +127,33 @@ void heap_heapify_up_arquivo(THeap* heap, int i) {
     }
 }
 
+THeap* heap_carrega_existente(const char* nomeArquivo) {
+    THeap* heap = malloc(sizeof(THeap));
+    if (!heap) {
+        printf("Erro ao alocar memória para heap\n");
+        return NULL;
+    }
+    
+    heap->arquivo = fopen(nomeArquivo, "r+b");
+    if (!heap->arquivo) {
+        printf("Erro ao abrir arquivo %s\n", nomeArquivo);
+        free(heap);
+        return NULL;
+    }
+    
+    fseek(heap->arquivo, 0, SEEK_SET);
+    if (fread(&heap->tamanho, sizeof(int), 1, heap->arquivo) != 1) {
+        printf("Erro ao ler tamanho do heap\n");
+        fclose(heap->arquivo);
+        free(heap);
+        return NULL;
+    }
+    
+    heap->capacidade = heap->tamanho + 1000;
+    
+    return heap;
+}
+
 THeap* heap_inicializa(int capacidade, const char* nomeArquivo) {
     THeap* heap = malloc(sizeof(THeap));
     if (!heap) {
