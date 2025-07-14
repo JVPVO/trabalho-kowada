@@ -20,7 +20,6 @@ int hash_remove(THashSecundaria* hash, const char* cpf);
 
 void hash_libera(THashSecundaria* hash);
 
-// Funções para controle do contador de colisões
 void hash_resetar_colisoes();
 int hash_obter_colisoes();
 

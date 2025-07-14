@@ -22,7 +22,6 @@ void dividir_filho_arvbmais(TNoArvBMais* pai, int indice){
     TNoArvBMais* cheio = pai->filhos[indice];
     TNoArvBMais* novoNo = criar_no_arvbmais(cheio->folha);
     int t = ORDEM_BP;
-    // move metade para novo nó
     novoNo->n_chaves = t;
     for(int i=0;i<t;i++){
         novoNo->chaves[i] = cheio->chaves[i+t];
@@ -34,7 +33,6 @@ void dividir_filho_arvbmais(TNoArvBMais* pai, int indice){
         }
     }
     cheio->n_chaves = t;
-    // abre espaço no pai
     for(int i=pai->n_chaves; i>indice; i--){
         pai->chaves[i] = pai->chaves[i-1];
         pai->filhos[i+1] = pai->filhos[i];
@@ -42,7 +40,6 @@ void dividir_filho_arvbmais(TNoArvBMais* pai, int indice){
     pai->chaves[indice] = novoNo->chaves[0];
     pai->filhos[indice+1]=novoNo;
     pai->n_chaves++;
-    // liga folhas
     if(cheio->folha){
         novoNo->prox = cheio->prox;
         cheio->prox = novoNo;
@@ -78,7 +75,6 @@ TARVBP* arvbp_inicializa(const char* nome_dados, const char* nome_indice){
     if(!arvore->arquivoDados){
         printf("Erro ao abrir dados_arvbmais.bin");
     }
-    // Carregamento de índice não implementado (inicial vazio)
     (void)nome_indice;
     return arvore;
 }
@@ -92,7 +88,6 @@ void arvbp_fecha(TARVBP* arvore, const char* nome_indice){
 }
 
 void arvbp_insere(TARVBP* arvore, TRegistro* registro){
-    // grava registro ao final do arquivo de dados
     fseek(arvore->arquivoDados, 0, SEEK_END);
     long desloc = ftell(arvore->arquivoDados);
     fwrite(registro, sizeof(TRegistro), 1, arvore->arquivoDados);
@@ -122,7 +117,6 @@ int arvbp_busca(TARVBP* arvore, const char* cpf, TRegistro* out){
             if(i<no->n_chaves && chave==no->chaves[i]){
                 fseek(arvore->arquivoDados, no->deslocs[i], SEEK_SET);
                 fread(out, sizeof(TRegistro),1, arvore->arquivoDados);
-                // Verificar se o CPF completo confere
                 if(strcmp(out->cpf, cpf) == 0) {
                     return 1;
                 }
@@ -138,31 +132,28 @@ int arvbp_busca(TARVBP* arvore, const char* cpf, TRegistro* out){
 int arvbp_remove(TARVBP* arvore, const char* cpf){
     int chave = cpf9(cpf);
     
-    // Busca simples para remover da árvore
     TNoArvBMais* no = arvore->raiz;
     while(no){
         int i=0;
         while(i<no->n_chaves && chave>no->chaves[i]) i++;
         if(no->folha){
             if(i<no->n_chaves && chave==no->chaves[i]){
-                // Verificar se o CPF completo confere
                 TRegistro temp;
                 fseek(arvore->arquivoDados, no->deslocs[i], SEEK_SET);
                 fread(&temp, sizeof(TRegistro), 1, arvore->arquivoDados);
                 if(strcmp(temp.cpf, cpf) == 0) {
-                    // Remove da folha movendo elementos para a esquerda
                     for(int j = i; j < no->n_chaves - 1; j++){
                         no->chaves[j] = no->chaves[j+1];
                         no->deslocs[j] = no->deslocs[j+1];
                     }
                     no->n_chaves--;
-                    return 1; // Removido com sucesso
+                    return 1;
                 }
             }
-            return 0; // Não encontrado
+            return 0;
         } else {
             no = no->filhos[i];
         }
     }
-    return 0; // Não encontrado
+    return 0;
 } 

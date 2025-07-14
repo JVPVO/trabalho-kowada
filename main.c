@@ -8,8 +8,6 @@
 #include "registro.h"
 #include <locale.h>
 
-
-
 TRegistro* criarRegistro(const char* cpfStr, const char* nome, int nota) {
     TRegistro* reg = malloc(sizeof(TRegistro));
     strncpy(reg->cpf, cpfStr, 11);
@@ -66,15 +64,12 @@ int carregarRegistros(const char* nomeArquivo, TRegistro** registros, int maxReg
 void testarHash(TRegistro** registros, int numRegistros) {
     printf("\n=== TESTANDO ESTRUTURA HASH ===\n");
     
-    //100019 número primo pra facilitar na divisão da tabela
-    //THashSecundaria* hash = hash_inicializa(100000);
     THashSecundaria* hash = hash_inicializa(100019);
     if (!hash) {
         printf("Erro ao inicializar hash\n");
         return;
     }
     
-    // Resetar contador de colisões
     hash_resetar_colisoes();
     clock_t inicio = clock();
     
@@ -87,7 +82,6 @@ void testarHash(TRegistro** registros, int numRegistros) {
     double tempo_insercao = ((double)(fim - inicio)) / CLOCKS_PER_SEC;
     printf("Tempo de inserção: %.4f segundos\n", tempo_insercao);
     
-    // Mostrar número de colisões
     printf("Colisões durante inserção: %d\n", hash_obter_colisoes());
     
     inicio = clock();
@@ -116,7 +110,6 @@ void testarHash(TRegistro** registros, int numRegistros) {
     hash_libera(hash);
 }
 
-// Testa operações na Árvore B+
 void testarArvoreB(TRegistro** registros, int numRegistros) {
     printf("\n=== TESTANDO ÁRVORE B+ ===\n");
     
@@ -165,11 +158,9 @@ void testarArvoreB(TRegistro** registros, int numRegistros) {
     arvbp_fecha(arvore, "indice_arvbmais.bin");
 }
 
-// Testa operações no Heap
 void testarHeap(TRegistro** registros, int numRegistros) {
     printf("\n=== TESTANDO HEAP (PRIORIDADE POR NOTA) ===\n");
     
-    // Zera o arquivo para um teste limpo
     FILE* f = fopen("dados_heap.bin", "w");
     if (f) fclose(f);
 
@@ -190,7 +181,6 @@ void testarHeap(TRegistro** registros, int numRegistros) {
     double tempo_insercao = ((double)(fim - inicio)) / CLOCKS_PER_SEC;
     printf("Tempo de inserção: %.4f segundos\n", tempo_insercao);
     
-    // Teste de busca por um único elemento (para provar que funciona)
     TRegistro resultado;
     if (numRegistros > 0) {
         printf("\nBuscando um registro específico (o primeiro da lista)...\n");
@@ -209,8 +199,6 @@ void testarHeap(TRegistro** registros, int numRegistros) {
         }
     }
     
-    // A remoção em massa é O(N^2) e não é um caso de uso típico para heap.
-    // O teste de extração acima já valida a remoção do máximo.
     printf("\nTeste de remoção em massa não executado para heap (evitar lentidão de O(N^2)).\n");
     
     heap_libera(heap);
@@ -218,19 +206,16 @@ void testarHeap(TRegistro** registros, int numRegistros) {
 
 int main() {
     setlocale(LC_NUMERIC, "pt_BR.UTF-8");
-    //Quero botar acento no terminal e tava dando uns carácteres estranhos.
     printf("=== SISTEMA DE GERENCIAMENTO DE REGISTROS ===\n");
     printf("Estruturas implementadas: Hash, Árvore B+, Heap\n\n");
     
-    // Alocar array para registros
     int MAX_REGISTROS = 10000;
     TRegistro** registros = malloc(MAX_REGISTROS * sizeof(TRegistro*));
     if (!registros) {
-        fprintf(stderr, "Erro ao alocar memória para registros\n");
+        printf("Erro ao alocar memória para registros\n");
         return 1;
     }
     
-    // Carregar registros do arquivo
     int numRegistros = carregarRegistros("registros.txt", registros, MAX_REGISTROS);
     if (numRegistros == 0) {
         printf("Execute primeiro: gcc gerarRegistros.c registro.h -o gerarRegistros && ./gerarRegistros\n");
@@ -238,12 +223,10 @@ int main() {
         return 1;
     }
     
-    // Testar todas as estruturas
     testarHash(registros, numRegistros);
     testarArvoreB(registros, numRegistros);
     testarHeap(registros, numRegistros);
     
-    // Liberar memória
     for (int i = 0; i < numRegistros; i++) {
         destruirRegistro(registros[i]);
     }
