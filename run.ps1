@@ -1,1 +1,2 @@
-gcc -o main main.c hash.c; ./main;
+gcc -o main.exe main.c hash.c arvorebmais.c heap.c
+./main.exe

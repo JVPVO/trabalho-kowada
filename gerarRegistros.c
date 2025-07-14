@@ -2,17 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-
-/*
-Script usado para gerar os 10.000 registros requisitados no trabalho, não sei se precisava ser em C, ou se podíamos
-gerar os registros em outras linguagens, com bibliotecas de geração de dados aleatórios válidos, o que deixaria mais bonito.
-*/ 
-
-typedef struct {
-    char nome[51];
-    char cpf[12];
-    int nota;
-} Registro;
+#include "registro.h"
 
 void gerarNomeAleatorio(char *nome) {
     const char *nomes[] = {
@@ -37,25 +27,20 @@ void gerarCpfAleatorio(char *cpf) {
     cpf[11] = '\0';
 }
 
+#define NUM_REGISTROS 10000
+
 int main() {
-    srand(time(NULL));
+    srand((unsigned)time(NULL));
 
     const char *nomeArquivo = "registros.txt";
-    FILE *arquivo;
-
-    arquivo = fopen(nomeArquivo, "w");
-
-    if (arquivo == NULL) {
-        perror("Erro");
+    FILE *arquivo = fopen(nomeArquivo, "w");
+    if (!arquivo) {
+        perror("Erro ao criar registros.txt");
         return 1;
     }
 
-    int NUM_REGISTROS;
-    printf("Digite o número de registros a serem gerados: ");
-    scanf("%d", &NUM_REGISTROS);
-
     for (int i = 0; i < NUM_REGISTROS; i++) {
-        Registro novoRegistro;
+        TRegistro novoRegistro;
 
         gerarNomeAleatorio(novoRegistro.nome);
         gerarCpfAleatorio(novoRegistro.cpf);
@@ -64,13 +49,11 @@ int main() {
         fprintf(arquivo, "%s,%s,%d\n", novoRegistro.nome, novoRegistro.cpf, novoRegistro.nota);
 
         if ((i + 1) % 1000 == 0) {
-            printf("%d...\n", i + 1);
+            printf("%d registros gerados...\n", i + 1);
         }
     }
 
     fclose(arquivo);
-
-    printf("Concluído.\n");
-
+    printf("Arquivo registros.txt gerado com %d registros.\n", NUM_REGISTROS);
     return 0;
 }
