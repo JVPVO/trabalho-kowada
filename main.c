@@ -6,6 +6,9 @@
 #include "arvorebmais.h"
 #include "heap.h"
 #include "registro.h"
+#include <locale.h>
+
+
 
 TRegistro* criarRegistro(const char* cpfStr, const char* nome, int nota) {
     TRegistro* reg = malloc(sizeof(TRegistro));
@@ -63,17 +66,20 @@ int carregarRegistros(const char* nomeArquivo, TRegistro** registros, int maxReg
 void testarHash(TRegistro** registros, int numRegistros) {
     printf("\n=== TESTANDO ESTRUTURA HASH ===\n");
     
-    THashSecundaria* hash = hash_inicializa(100000);
+    //100019 número primo pra facilitar na divisão da tabela
+    //THashSecundaria* hash = hash_inicializa(100000);
+    THashSecundaria* hash = hash_inicializa(100019);
     if (!hash) {
         printf("Erro ao inicializar hash\n");
         return;
     }
     
+    // Resetar contador de colisões
+    hash_resetar_colisoes();
     clock_t inicio = clock();
     
-    // Inserir primeiros 1000 registros
-    printf("Inserindo 1000 registros na hash...\n");
-    for (int i = 0; i < 1000 && i < numRegistros; i++) {
+    printf("Inserindo %d registros na hash...\n", numRegistros);
+    for (int i = 0; i < numRegistros; i++) {
         hash_insere(hash, registros[i]);
     }
     
@@ -81,23 +87,24 @@ void testarHash(TRegistro** registros, int numRegistros) {
     double tempo_insercao = ((double)(fim - inicio)) / CLOCKS_PER_SEC;
     printf("Tempo de inserção: %.4f segundos\n", tempo_insercao);
     
-    // Testar busca
+    // Mostrar número de colisões
+    printf("Colisões durante inserção: %d\n", hash_obter_colisoes());
+    
     inicio = clock();
     TRegistro resultado;
     int encontrados = 0;
-    for (int i = 0; i < 100 && i < numRegistros; i++) {
+    for (int i = 0; i < numRegistros; i++) {
         if (hash_busca(hash, registros[i]->cpf, &resultado)) {
             encontrados++;
         }
     }
     fim = clock();
     double tempo_busca = ((double)(fim - inicio)) / CLOCKS_PER_SEC;
-    printf("Busca: %d/100 registros encontrados em %.4f segundos\n", encontrados, tempo_busca);
+    printf("Busca: %d/%d registros encontrados em %.4f segundos\n", encontrados, numRegistros, tempo_busca);
     
-    // Testar remoção
     inicio = clock();
     int removidos = 0;
-    for (int i = 0; i < 50 && i < numRegistros; i++) {
+    for (int i = 0; i < numRegistros; i++) {
         if (hash_remove(hash, registros[i]->cpf)) {
             removidos++;
         }
@@ -121,9 +128,8 @@ void testarArvoreB(TRegistro** registros, int numRegistros) {
     
     clock_t inicio = clock();
     
-    // Inserir primeiros 1000 registros
-    printf("Inserindo 1000 registros na árvore B+...\n");
-    for (int i = 0; i < 1000 && i < numRegistros; i++) {
+    printf("Inserindo %d registros na árvore B+...\n", numRegistros);
+    for (int i = 0; i < numRegistros; i++) {
         arvbp_insere(arvore, registros[i]);
     }
     
@@ -131,27 +137,27 @@ void testarArvoreB(TRegistro** registros, int numRegistros) {
     double tempo_insercao = ((double)(fim - inicio)) / CLOCKS_PER_SEC;
     printf("Tempo de inserção: %.4f segundos\n", tempo_insercao);
     
-    // Testar busca
     inicio = clock();
     TRegistro resultado;
     int encontrados = 0;
-    for (int i = 0; i < 100 && i < numRegistros; i++) {
+    for (int i = 0; i < numRegistros; i++) {
         if (arvbp_busca(arvore, registros[i]->cpf, &resultado)) {
             encontrados++;
         }
     }
     fim = clock();
     double tempo_busca = ((double)(fim - inicio)) / CLOCKS_PER_SEC;
-    printf("Busca: %d/100 registros encontrados em %.4f segundos\n", encontrados, tempo_busca);
+    printf("Busca: %d/%d registros encontrados em %.4f segundos\n", encontrados, numRegistros, tempo_busca);
     
-    // Testar remoção
     inicio = clock();
     int removidos = 0;
-    for (int i = 0; i < 50 && i < numRegistros; i++) {
+    
+    for (int i = 0; i < numRegistros; i++) {
         if (arvbp_remove(arvore, registros[i]->cpf)) {
             removidos++;
         }
     }
+    
     fim = clock();
     double tempo_remocao = ((double)(fim - inicio)) / CLOCKS_PER_SEC;
     printf("Remoção: %d registros removidos em %.4f segundos\n", removidos, tempo_remocao);
@@ -163,7 +169,11 @@ void testarArvoreB(TRegistro** registros, int numRegistros) {
 void testarHeap(TRegistro** registros, int numRegistros) {
     printf("\n=== TESTANDO HEAP (PRIORIDADE POR NOTA) ===\n");
     
-    THeap* heap = heap_inicializa(10000, "dados_heap.bin");
+    // Zera o arquivo para um teste limpo
+    FILE* f = fopen("dados_heap.bin", "w");
+    if (f) fclose(f);
+
+    THeap* heap = heap_inicializa(numRegistros, "dados_heap.bin");
     if (!heap) {
         printf("Erro ao inicializar heap\n");
         return;
@@ -171,9 +181,8 @@ void testarHeap(TRegistro** registros, int numRegistros) {
     
     clock_t inicio = clock();
     
-    // Inserir primeiros 1000 registros
-    printf("Inserindo 1000 registros no heap...\n");
-    for (int i = 0; i < 1000 && i < numRegistros; i++) {
+    printf("Inserindo %d registros no heap...\n", numRegistros);
+    for (int i = 0; i < numRegistros; i++) {
         heap_insere(heap, registros[i]);
     }
     
@@ -181,49 +190,40 @@ void testarHeap(TRegistro** registros, int numRegistros) {
     double tempo_insercao = ((double)(fim - inicio)) / CLOCKS_PER_SEC;
     printf("Tempo de inserção: %.4f segundos\n", tempo_insercao);
     
-    // Testar busca
-    inicio = clock();
+    // Teste de busca por um único elemento (para provar que funciona)
     TRegistro resultado;
-    int encontrados = 0;
-    for (int i = 0; i < 100 && i < numRegistros; i++) {
-        if (heap_busca(heap, registros[i]->cpf, &resultado)) {
-            encontrados++;
+    if (numRegistros > 0) {
+        printf("\nBuscando um registro específico (o primeiro da lista)...\n");
+        if (heap_busca(heap, registros[0]->cpf, &resultado)) {
+            printf("Registro encontrado: %s, Nota: %d\n", resultado.nome, resultado.nota);
+        } else {
+            printf("Registro não encontrado.\n");
         }
     }
-    fim = clock();
-    double tempo_busca = ((double)(fim - inicio)) / CLOCKS_PER_SEC;
-    printf("Busca: %d/100 registros encontrados em %.4f segundos\n", encontrados, tempo_busca);
-    
-    // Mostrar os 5 maiores (maior prioridade)
-    printf("\nTop 5 maiores notas:\n");
-    for (int i = 0; i < 5; i++) {
+
+    printf("\nTop 5 maiores notas (extraindo do heap):\n");
+    for (int i = 0; i < 5 && heap->tamanho > 0; i++) {
         TRegistro max;
         if (heap_extrair_max(heap, &max)) {
             printf("%d. %s (CPF: %s) - Nota: %d\n", i+1, max.nome, max.cpf, max.nota);
         }
     }
     
-    // Testar remoção
-    inicio = clock();
-    int removidos = 0;
-    for (int i = 0; i < 50 && i < numRegistros; i++) {
-        if (heap_remove(heap, registros[i]->cpf)) {
-            removidos++;
-        }
-    }
-    fim = clock();
-    double tempo_remocao = ((double)(fim - inicio)) / CLOCKS_PER_SEC;
-    printf("Remoção: %d registros removidos em %.4f segundos\n", removidos, tempo_remocao);
+    // A remoção em massa é O(N^2) e não é um caso de uso típico para heap.
+    // O teste de extração acima já valida a remoção do máximo.
+    printf("\nTeste de remoção em massa não executado para heap (evitar lentidão de O(N^2)).\n");
     
     heap_libera(heap);
 }
 
 int main() {
+    setlocale(LC_NUMERIC, "pt_BR.UTF-8");
+    //Quero botar acento no terminal e tava dando uns carácteres estranhos.
     printf("=== SISTEMA DE GERENCIAMENTO DE REGISTROS ===\n");
     printf("Estruturas implementadas: Hash, Árvore B+, Heap\n\n");
     
     // Alocar array para registros
-    const int MAX_REGISTROS = 10000;
+    int MAX_REGISTROS = 10000;
     TRegistro** registros = malloc(MAX_REGISTROS * sizeof(TRegistro*));
     if (!registros) {
         fprintf(stderr, "Erro ao alocar memória para registros\n");

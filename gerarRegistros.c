@@ -27,12 +27,23 @@ void gerarCpfAleatorio(char *cpf) {
     cpf[11] = '\0';
 }
 
-#define NUM_REGISTROS 10000
 
 int main() {
     srand((unsigned)time(NULL));
 
-    const char *nomeArquivo = "registros.txt";
+    char *nomeArquivo = "registros.txt";
+    printf("Digite o número de registros que deseja gerar: ");
+    int NUM_REGISTROS;
+    scanf("%d", &NUM_REGISTROS);
+    if (NUM_REGISTROS > 10000){
+        printf("Número de registros inválido, o máximo é 10000, tenha piedade\n");
+        return 1;
+    }
+    if (NUM_REGISTROS < 1){
+        printf("Número de registros inválido, o mínimo é 1\n");
+        return 1;
+    }
+
     FILE *arquivo = fopen(nomeArquivo, "w");
     if (!arquivo) {
         perror("Erro ao criar registros.txt");
